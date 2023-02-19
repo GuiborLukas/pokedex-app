@@ -36,10 +36,10 @@ public interface PokemonService {
     Call<Pokemon> getPokemonPorId(@Path("id") Long id);
 
     @POST("/pokemons")
-    Call<Pokemon> cadastrarPokemon(@Body RequestBody requestBody);
+    Call<Pokemon> cadastrarPokemon(@Body Pokemon pokemon);
 
     @PUT("/pokemons/{id}")
-    Call<Pokemon> atualizarPokemon(@Path("id") Long id, @Body RequestBody requestBody);
+    Call<Pokemon> atualizarPokemon(@Path("id") Long id, @Body Pokemon pokemon);
 
     @DELETE("/pokemons/{id}")
     Call<ResponseBody> deletarPokemon(@Path("id") Long id);

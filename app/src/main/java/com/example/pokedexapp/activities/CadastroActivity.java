@@ -21,6 +21,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.pokedexapp.R;
 import com.example.pokedexapp.controllers.RetrofitConfig;
 import com.example.pokedexapp.models.Pokemon;
@@ -81,7 +82,7 @@ public class CadastroActivity extends AppCompatActivity {
     private void selectImage() {
         verifyPermissions(CadastroActivity.this);
         final CharSequence[] options = {"Tirar Foto", "Escolher da Galeria", "Cancelar"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(CadastroActivity.this);
         builder.setTitle("Adicionar foto!");
         builder.setItems(options, (dialog, which) -> {
             if ("Tirar Foto".equals(options[which])) {
@@ -89,7 +90,7 @@ public class CadastroActivity extends AppCompatActivity {
                 activityResultLauncherTakePicture.launch(intent);
             } else if ("Escolher da Galeria".equals(options[which])) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                startActivityForResult(intent, PICK_IMAGE_REQUEST);
+                activityResultLauncherPickPicture.launch(intent);
             } else if ("Cancelar".equals(options[which])) {
                 dialog.dismiss();
             }
@@ -121,6 +122,20 @@ public class CadastroActivity extends AppCompatActivity {
                     Bundle bundle = result.getData().getExtras();
                     imagem = (Bitmap) bundle.get("data");
                     imageViewCadastroFoto.setImageBitmap(imagem);
+                }
+            }
+    );
+
+    ActivityResultLauncher<Intent> activityResultLauncherPickPicture = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null){
+                    selectedImage = result.getData().getData();
+                    Glide.with(this).load(selectedImage).into(imageViewCadastroFoto);
+                    try {
+                        imagem = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
     );
@@ -157,25 +172,20 @@ public class CadastroActivity extends AppCompatActivity {
         novoPokemon.setNome(editTextCadastroNome.getText().toString());
         novoPokemon.setTipo(editTextCadastroTipo.getText().toString());
         List<String> habilidades = new ArrayList<>();
-        if(editTextHabilidade1.getText().toString() != null || !"".equalsIgnoreCase(editTextHabilidade1.getText().toString())){
-            habilidades.add(editTextHabilidade1.getText().toString());}
-        if(editTextHabilidade2.getText().toString() != null || !"".equalsIgnoreCase(editTextHabilidade2.getText().toString())){
-            habilidades.add(editTextHabilidade2.getText().toString());}
-        if(editTextHabilidade3.getText().toString() != null || !"".equalsIgnoreCase(editTextHabilidade3.getText().toString())){
-            habilidades.add(editTextHabilidade3.getText().toString());}
+        habilidades.add(editTextHabilidade1.getText().toString());
+        habilidades.add(editTextHabilidade2.getText().toString());
+        habilidades.add(editTextHabilidade3.getText().toString());
         novoPokemon.setHabilidade(habilidades);
-        ByteArrayOutputStream blob = new ByteArrayOutputStream();
-        imagem.compress(Bitmap.CompressFormat.PNG, 0, blob);
-        byte[] bitmapdata = blob.toByteArray();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        imagem.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bitmapdata = stream.toByteArray();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             novoPokemon.setFoto(Base64.getEncoder().encodeToString(bitmapdata));
         }
         novoPokemon.setUsuario(user.getId());
 
-        String jsonPokemon = gson.toJson(novoPokemon);
-        RequestBody requestBody =  RequestBody.create(jsonPokemon, MediaType.parse("application/json"));
 
-        Call<Pokemon> cadastrarPokemon = new RetrofitConfig().getPokemonsService().cadastrarPokemon(requestBody);
+        Call<Pokemon> cadastrarPokemon = new RetrofitConfig().getPokemonsService().cadastrarPokemon(novoPokemon);
         cadastrarPokemon.enqueue(new Callback<Pokemon>() {
             @Override
             public void onResponse(Call<Pokemon> call, Response<Pokemon> response) {

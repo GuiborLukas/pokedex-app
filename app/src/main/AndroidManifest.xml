@@ -24,24 +24,31 @@
         tools:targetApi="32">
         <activity
             android:name=".activities.DetailActivity"
+            android:theme="@style/Theme.AppCompat"
             android:exported="false" />
         <activity
             android:name=".activities.PesquisaHabilidadeActivity"
+            android:theme="@style/Theme.AppCompat"
             android:exported="false" />
         <activity
             android:name=".activities.PesquisaTipoActivity"
+            android:theme="@style/Theme.AppCompat"
             android:exported="false" />
         <activity
             android:name=".activities.ListaActivity"
+            android:theme="@style/Theme.AppCompat"
             android:exported="false" />
         <activity
             android:name=".activities.CadastroActivity"
+            android:theme="@style/Theme.AppCompat"
             android:exported="false" />
         <activity
             android:name=".activities.DashboardActivity"
+            android:theme="@style/Theme.AppCompat"
             android:exported="false" />
         <activity
             android:name=".activities.SplashActivity"
+            android:theme="@style/Theme.AppCompat"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -51,6 +58,7 @@
         </activity>
         <activity
             android:name=".activities.MainActivity"
+            android:theme="@style/Theme.AppCompat"
             android:exported="true" />
         <provider
             android:name="androidx.core.content.FileProvider"

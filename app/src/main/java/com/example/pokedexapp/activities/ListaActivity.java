@@ -24,8 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
+import java.text.ParseException;
 import java.util.List;
 
 import retrofit2.Call;
@@ -34,25 +33,40 @@ import retrofit2.Response;
 
 
 public class ListaActivity extends AppCompatActivity {
-    private List<Pokemon> pokemonList = new ArrayList<>();
+    private List<Pokemon> pokemonList;
     private Usuario user;
+    private RecyclerView recyclerViewPokemons;
+    private AdapterPokemon adapterPokemon;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lista);
         Bundle bundle = getIntent().getExtras();
-        this.user = (Usuario) bundle.getSerializable("user");
-        getListaPokemon();
+        this.user = (Usuario) bundle.getSerializable("usuario");
+    }
 
-        RecyclerView recyclerViewPokemon = findViewById(R.id.recyclerViewPokemons);
-        AdapterPokemon adapter = new AdapterPokemon(pokemonList);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerViewPokemon.setLayoutManager(layoutManager);
-        recyclerViewPokemon.setHasFixedSize(true);
-        recyclerViewPokemon.addItemDecoration(new DividerItemDecoration(getApplicationContext(), LinearLayout.VERTICAL));
-        recyclerViewPokemon.setAdapter(adapter);
-        recyclerViewPokemon.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), recyclerViewPokemon, new RecyclerItemClickListener.OnItemClickListener() {
+    @Override
+    protected void onStart(){
+        super.onStart();
+        try {
+            Log.i("Lista Activity", "Tentando iniciar updateRecyclerOperation()");
+            updateRecyclerOperation();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void updateRecyclerOperation() throws ParseException {
+        getListaPokemon();
+        recyclerViewPokemons = findViewById(R.id.recyclerViewPokemons);
+        adapterPokemon = new AdapterPokemon(pokemonList);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
+        recyclerViewPokemons.setLayoutManager(layoutManager);
+        recyclerViewPokemons.setHasFixedSize(true);
+        recyclerViewPokemons.addItemDecoration(new DividerItemDecoration(getApplicationContext(), LinearLayout.VERTICAL));
+        recyclerViewPokemons.setAdapter(adapterPokemon);
+        recyclerViewPokemons.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), recyclerViewPokemons, new RecyclerItemClickListener.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
                 Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
@@ -75,17 +89,16 @@ public class ListaActivity extends AppCompatActivity {
 
             }
         }));
-
-
     }
 
     public void getListaPokemon() {
-        Call<List<Pokemon>> callPokemons = new RetrofitConfig().getPokemonsService().getPokemons();
-        callPokemons.enqueue(new Callback<List<Pokemon>>() {
+        Call<List<Pokemon>> callPokemon = new RetrofitConfig().getPokemonsService().getPokemonsPorHabilidade("Chicote");
+        callPokemon.enqueue(new Callback<List<Pokemon>>() {
             @Override
             public void onResponse(Call<List<Pokemon>> call, Response<List<Pokemon>> response) {
                 if (response.isSuccessful()) {
-                    pokemonList = new ArrayList<>(response.body());
+                    List<Pokemon> pokemons = response.body();
+                    pokemonList = pokemons;
                     if (pokemonList.size() == 0) {
                         new AlertDialog.Builder(getApplicationContext()).setTitle("Atenção").setMessage("Nenhum pokemon encontrado para exibição").show();
                         return;

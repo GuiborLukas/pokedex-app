@@ -190,10 +190,10 @@ public class DetailActivity extends AppCompatActivity {
         }
         pokemon.setUsuario(user.getId());
 
-        String jsonPokemon = gson.toJson(pokemon);
-        RequestBody requestBody =  RequestBody.create(jsonPokemon, MediaType.parse("application/json"));
+//        String jsonPokemon = gson.toJson(pokemon);
+//        RequestBody requestBody =  RequestBody.create(jsonPokemon, MediaType.parse("application/json"));
 
-        Call<Pokemon> cadastrarPokemon = new RetrofitConfig().getPokemonsService().atualizarPokemon(pokemon.getId(), requestBody);
+        Call<Pokemon> cadastrarPokemon = new RetrofitConfig().getPokemonsService().atualizarPokemon(pokemon.getId(), pokemon);
         cadastrarPokemon.enqueue(new Callback<Pokemon>() {
             @Override
             public void onResponse(Call<Pokemon> call, Response<Pokemon> response) {

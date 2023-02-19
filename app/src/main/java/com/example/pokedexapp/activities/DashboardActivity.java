@@ -123,7 +123,7 @@ public class DashboardActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     List<Tipo> tipos = response.body();
                     for (Tipo tipo : tipos) {
-                        textViewTopTresHabilidades.append(String.format("%s (%d)\n", tipo.getNome(), tipo.getQuantidade()));
+                        textViewTopTresTipos.append(String.format("%s (%d)\n", tipo.getNome(), tipo.getQuantidade()));
                     }
                 } else {
                     try {
@@ -150,7 +150,7 @@ public class DashboardActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     List<Habilidade> habilidades = response.body();
                     for (Habilidade habilidade : habilidades) {
-                        textViewTopTresTipos.append(String.format("%s (%d)\n", habilidade.getNome(), habilidade.getQuantidade()));
+                        textViewTopTresHabilidades.append(String.format("%s (%d)\n", habilidade.getNome(), habilidade.getQuantidade()));
                     }
                 } else {
                     try {

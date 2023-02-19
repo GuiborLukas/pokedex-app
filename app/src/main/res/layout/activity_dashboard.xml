@@ -8,30 +8,34 @@
 
     <TextView
         android:id="@+id/textViewTopTresHabilidades"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textSize="12sp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/textViewTitleTopTresHabilidades"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:textSize="16sp"
+        android:textAlignment="textEnd"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toEndOf="@+id/textViewTitleTopTresHabilidades"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTopTresTipos" />
 
     <TextView
         android:id="@+id/textViewTitleTopTresHabilidades"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="208dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
         android:text="Top 3 Habilidades"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewTopTresTipos" />
 
     <TextView
         android:id="@+id/textViewTitleTotalPokemons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="41dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
         android:text="Total de Pokemons"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,33 +43,39 @@
 
     <TextView
         android:id="@+id/textViewTotalPokemons"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="36dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:textAlignment="textEnd"
         android:textSize="16sp"
-        app:layout_constraintBaseline_toBaselineOf="@+id/textViewTitleTotalPokemons"
-        app:layout_constraintStart_toEndOf="@+id/textViewTitleTotalPokemons" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textViewTitleTotalPokemons"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/textViewTitleTopTresTipos"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="107dp"
-        android:layout_marginBottom="101dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
         android:text="Top 3 Tipos"
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="@+id/textViewTitleTopTresHabilidades"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/textViewTitleTotalPokemons" />
 
     <TextView
         android:id="@+id/textViewTopTresTipos"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
-        android:textSize="12sp"
-        app:layout_constraintStart_toStartOf="@+id/textViewTotalPokemons"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:textSize="16sp"
+        android:textAlignment="textEnd"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/textViewTitleTopTresTipos"
         app:layout_constraintTop_toBottomOf="@+id/textViewTotalPokemons" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

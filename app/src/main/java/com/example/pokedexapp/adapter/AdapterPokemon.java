@@ -10,11 +10,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.pokedexapp.R;
 import com.example.pokedexapp.models.Pokemon;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 
@@ -32,16 +35,14 @@ public class AdapterPokemon extends RecyclerView.Adapter<AdapterPokemon.MyViewHo
         return new MyViewHolder(listItem);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Pokemon pokemon = pokemonList.get(position);
-        holder.nome.setText(pokemon.getNome());
-        byte[] bytes = null;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            bytes = Base64.getDecoder().decode(pokemon.getFoto());
-        }
-        Bitmap image = byteToBitmap(bytes);
-        holder.foto.setImageBitmap(image);
+        holder.textViewAdapterNome.setText(pokemon.getNome());
+        byte[] bytes = Base64.getDecoder().decode(pokemon.getFoto());
+        Bitmap image =  BitmapFactory.decodeStream(new ByteArrayInputStream(bytes), null, null);
+        holder.imageViewFotoPokemon.setImageBitmap(image);
     }
 
     @Override
@@ -50,18 +51,14 @@ public class AdapterPokemon extends RecyclerView.Adapter<AdapterPokemon.MyViewHo
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        ImageView foto;
-        TextView nome;
+        ImageView imageViewFotoPokemon;
+        TextView textViewAdapterNome;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
-            this.foto = itemView.findViewById(R.id.imageViewFotoPokemon);
-            this.nome = itemView.findViewById(R.id.textViewAdapterNome);
+            this.imageViewFotoPokemon = itemView.findViewById(R.id.imageViewFotoPokemon);
+            this.textViewAdapterNome = itemView.findViewById(R.id.textViewAdapterNome);
         }
     }
 
-    public static Bitmap byteToBitmap(byte[] bytes) {
-        return (bytes == null || bytes.length == 0) ? null : BitmapFactory
-                .decodeByteArray(bytes, 0, bytes.length);
-    }
 }
