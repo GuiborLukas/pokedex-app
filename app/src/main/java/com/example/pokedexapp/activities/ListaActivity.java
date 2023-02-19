@@ -44,69 +44,54 @@ public class ListaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_lista);
         Bundle bundle = getIntent().getExtras();
         this.user = (Usuario) bundle.getSerializable("usuario");
-    }
-
-    @Override
-    protected void onStart(){
-        super.onStart();
-        try {
-            Log.i("Lista Activity", "Tentando iniciar updateRecyclerOperation()");
-            updateRecyclerOperation();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void updateRecyclerOperation() throws ParseException {
         getListaPokemon();
-        recyclerViewPokemons = findViewById(R.id.recyclerViewPokemons);
-        adapterPokemon = new AdapterPokemon(pokemonList);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
-        recyclerViewPokemons.setLayoutManager(layoutManager);
-        recyclerViewPokemons.setHasFixedSize(true);
-        recyclerViewPokemons.addItemDecoration(new DividerItemDecoration(getApplicationContext(), LinearLayout.VERTICAL));
-        recyclerViewPokemons.setAdapter(adapterPokemon);
-        recyclerViewPokemons.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), recyclerViewPokemons, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
-                Pokemon pokemon = pokemonList.get(position);
-                Bundle bundle = new Bundle();
-                bundle.putSerializable("usuario", user);
-                bundle.putSerializable("pokemon", pokemon);
-                intent.putExtras(bundle);
-                startActivity(intent);
-                finish();
-            }
-
-            @Override
-            public void onLongItemClick(View view, int position) {
-                onItemClick(view, position);
-            }
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-            }
-        }));
     }
 
     public void getListaPokemon() {
-        Call<List<Pokemon>> callPokemon = new RetrofitConfig().getPokemonsService().getPokemonsPorHabilidade("Chicote");
+        Call<List<Pokemon>> callPokemon = new RetrofitConfig().getPokemonsService().getPokemons();
         callPokemon.enqueue(new Callback<List<Pokemon>>() {
             @Override
             public void onResponse(Call<List<Pokemon>> call, Response<List<Pokemon>> response) {
                 if (response.isSuccessful()) {
                     List<Pokemon> pokemons = response.body();
-                    pokemonList = pokemons;
-                    if (pokemonList.size() == 0) {
-                        new AlertDialog.Builder(getApplicationContext()).setTitle("Atenção").setMessage("Nenhum pokemon encontrado para exibição").show();
+                    recyclerViewPokemons = findViewById(R.id.recyclerViewPokemons);
+                    adapterPokemon = new AdapterPokemon(pokemons);
+                    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
+                    recyclerViewPokemons.setLayoutManager(layoutManager);
+                    recyclerViewPokemons.setHasFixedSize(true);
+                    recyclerViewPokemons.addItemDecoration(new DividerItemDecoration(getApplicationContext(), LinearLayout.VERTICAL));
+                    recyclerViewPokemons.setAdapter(adapterPokemon);
+                    recyclerViewPokemons.addOnItemTouchListener(new RecyclerItemClickListener(getApplicationContext(), recyclerViewPokemons, new RecyclerItemClickListener.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(View view, int position) {
+                            Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                            Pokemon pokemon = pokemons.get(position);
+                            Bundle bundle = new Bundle();
+                            bundle.putSerializable("usuario", user);
+                            bundle.putSerializable("pokemon", pokemon);
+                            intent.putExtras(bundle);
+                            startActivity(intent);
+                            finish();
+                        }
+
+                        @Override
+                        public void onLongItemClick(View view, int position) {
+                            onItemClick(view, position);
+                        }
+
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                        }
+                    }));
+                    if (pokemons.size() == 0) {
+                        new AlertDialog.Builder(ListaActivity.this).setTitle("Atenção").setMessage("Nenhum pokemon encontrado para exibição").show();
                         return;
                     }
                 } else {
                     try {
                         JSONObject jObjError = new JSONObject(response.errorBody().string());
-                        new AlertDialog.Builder(getApplicationContext()).setTitle(String.format("Erro %d", response.code())).setMessage(jObjError.getString("error")).show();
+                        new AlertDialog.Builder(ListaActivity.this).setTitle(String.format("Erro %d", response.code())).setMessage(jObjError.getString("error")).show();
                     } catch (JSONException | IOException e) {
                         e.printStackTrace();
                     }

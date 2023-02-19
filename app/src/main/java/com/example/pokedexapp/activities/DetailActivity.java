@@ -25,6 +25,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.pokedexapp.R;
 import com.example.pokedexapp.controllers.RetrofitConfig;
 import com.example.pokedexapp.models.Pokemon;
@@ -64,10 +65,11 @@ public class DetailActivity extends AppCompatActivity {
     private Bitmap imagem;
 
     private static final int PICK_IMAGE_REQUEST = 1307;
-    private static final int REQUEST_EXTERNAL_STORAGE = 0402;
-    private static final String[] PERMISSIONS_STORAGE = {
+    private static final int REQUEST_PERMISSIONS = 0402;
+    private static final String[] PERMISSIONS_TO_REQUEST = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.CAMERA
     };
 
     @Override
@@ -81,6 +83,7 @@ public class DetailActivity extends AppCompatActivity {
         editTextDetalheNome = findViewById(R.id.editTextDetalheNome);
         imageViewDetalheFoto = findViewById(R.id.imageViewDetalheFoto);
         editTextDetalheTipo = findViewById(R.id.editTextDetalheTipo);
+        editTextDetalheTipo.setText(pokemon.getTipo());
         editTextDetalheHabilidade1 = findViewById(R.id.editTextDetalheHabilidade1);
         editTextDetalheHabilidade2 = findViewById(R.id.editTextDetalheHabilidade2);
         editTextDetalheHabilidade3 = findViewById(R.id.editTextDetalheHabilidade3);
@@ -106,40 +109,33 @@ public class DetailActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             bytes = Base64.getDecoder().decode(pokemon.getFoto());
         }
-        Bitmap image = byteToBitmap(bytes);
-        imageViewDetalheFoto.setImageBitmap(image);
+        imagem = byteToBitmap(bytes);
+        imageViewDetalheFoto.setImageBitmap(imagem);
 
-        imageViewDetalheFoto.setOnClickListener(v -> {
-            verifyStoragePermissions(DetailActivity.this);
-            Intent intent1 = new Intent(Intent.ACTION_GET_CONTENT);
-            intent1.setType("image/*");
-            startActivityForResult(Intent.createChooser(intent1, "Abrir galeria"), PICK_IMAGE_REQUEST);
-        });
+        imageViewDetalheFoto.setOnClickListener(v -> selectImage());
     }
 
-    public static Bitmap byteToBitmap(byte[] bytes) {
-        return (bytes == null || bytes.length == 0) ? null : BitmapFactory
-                .decodeByteArray(bytes, 0, bytes.length);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        if (resultCode == RESULT_OK) {
-            if (requestCode == PICK_IMAGE_REQUEST && data != null && data.getData() != null) {
-                try {
-                    selectedImage = data.getData();
-                    imagem = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
-                } catch (IOException e) {
-
-                }
-                imageViewDetalheFoto.setImageBitmap(imagem);
+    private void selectImage() {
+        verifyPermissions(DetailActivity.this);
+        final CharSequence[] options = {"Tirar Foto", "Escolher da Galeria", "Cancelar"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(DetailActivity.this);
+        builder.setTitle("Adicionar foto!");
+        builder.setItems(options, (dialog, which) -> {
+            if ("Tirar Foto".equals(options[which])) {
+                Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                activityResultLauncherTakePicture.launch(intent);
+            } else if ("Escolher da Galeria".equals(options[which])) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                activityResultLauncherPickPicture.launch(intent);
+            } else if ("Cancelar".equals(options[which])) {
+                dialog.dismiss();
             }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
+        });
+        builder.show();
+
     }
 
-    ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+    ActivityResultLauncher<Intent> activityResultLauncherTakePicture = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null){
                     Bundle bundle = result.getData().getExtras();
@@ -149,14 +145,37 @@ public class DetailActivity extends AppCompatActivity {
             }
     );
 
-    public static void verifyStoragePermissions(Activity activity) {
-        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+    ActivityResultLauncher<Intent> activityResultLauncherPickPicture = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null){
+                    selectedImage = result.getData().getData();
+                    Glide.with(this).load(selectedImage).into(imageViewDetalheFoto);
+                    try {
+                        imagem = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+    );
 
-        if (permission != PackageManager.PERMISSION_GRANTED) {
+
+    public static Bitmap byteToBitmap(byte[] bytes) {
+        return (bytes == null || bytes.length == 0) ? null : BitmapFactory
+                .decodeByteArray(bytes, 0, bytes.length);
+    }
+
+
+
+    public static void verifyPermissions(Activity activity) {
+        int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int cameraPermission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.CAMERA);
+
+        if ((permission != PackageManager.PERMISSION_GRANTED) || (cameraPermission != PackageManager.PERMISSION_GRANTED)) {
             ActivityCompat.requestPermissions(
                     activity,
-                    PERMISSIONS_STORAGE,
-                    REQUEST_EXTERNAL_STORAGE
+                    PERMISSIONS_TO_REQUEST,
+                    REQUEST_PERMISSIONS
             );
         }
     }
@@ -182,19 +201,15 @@ public class DetailActivity extends AppCompatActivity {
         habilidades.add(editTextDetalheHabilidade2.getText().toString());
         habilidades.add(editTextDetalheHabilidade3.getText().toString());
         pokemon.setHabilidade(habilidades);
-        ByteArrayOutputStream blob = new ByteArrayOutputStream();
-        imagem.compress(Bitmap.CompressFormat.PNG, 0, blob);
-        byte[] bitmapdata = blob.toByteArray();
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        imagem.compress(Bitmap.CompressFormat.PNG, 100, stream);
+        byte[] bitmapdata = stream.toByteArray();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             pokemon.setFoto(Base64.getEncoder().encodeToString(bitmapdata));
         }
-        pokemon.setUsuario(user.getId());
 
-//        String jsonPokemon = gson.toJson(pokemon);
-//        RequestBody requestBody =  RequestBody.create(jsonPokemon, MediaType.parse("application/json"));
-
-        Call<Pokemon> cadastrarPokemon = new RetrofitConfig().getPokemonsService().atualizarPokemon(pokemon.getId(), pokemon);
-        cadastrarPokemon.enqueue(new Callback<Pokemon>() {
+        Call<Pokemon> atualizarPokemon = new RetrofitConfig().getPokemonsService().atualizarPokemon(pokemon.getId(), pokemon);
+        atualizarPokemon.enqueue(new Callback<Pokemon>() {
             @Override
             public void onResponse(Call<Pokemon> call, Response<Pokemon> response) {
                 if (response.isSuccessful()) {
@@ -220,7 +235,7 @@ public class DetailActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<Pokemon> call, Throwable t) {
-                Log.e("ERRO", "Cadastrar Pokemon: " + t.getMessage());
+                Log.e("ERRO", "Atualizar Pokemon: " + t.getMessage());
                 new AlertDialog.Builder(DetailActivity.this).setTitle("Erro interno").setMessage("Erro ao conectar ao servidor.").show();
             }
         });
@@ -263,42 +278,13 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void recarregaLista() {
-        Call<List<Pokemon>> callPokemons = new RetrofitConfig().getPokemonsService().getPokemons();
-        callPokemons.enqueue(new Callback<List<Pokemon>>() {
-            @Override
-            public void onResponse(Call<List<Pokemon>> call, Response<List<Pokemon>> response) {
-                if (response.isSuccessful()) {
-                    List<Pokemon> pokemonList = new ArrayList<>(response.body());
-                    Intent intent;
-                    if (pokemonList.size() == 0) {
-                        intent = new Intent(DetailActivity.this, DashboardActivity.class);
-                    } else {
-                        intent = new Intent(DetailActivity.this, ListaActivity.class);
-                    }
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("pokemons", (Serializable) pokemonList);
-                    bundle.putSerializable("usuario", user);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    try {
-                        JSONObject jObjError = new JSONObject(response.errorBody().string());
-                        new AlertDialog.Builder(DetailActivity.this).setTitle("Erro").setMessage(jObjError.getString("error")).show();
-                    } catch (JSONException | IOException e) {
-                        e.printStackTrace();
-                        new AlertDialog.Builder(DetailActivity.this).setTitle("Erro").setMessage(response.errorBody().toString()).show();
-
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Pokemon>> call, Throwable t) {
-                Log.e("ERRO", "getPokemons: " + t.getMessage());
-                new AlertDialog.Builder(DetailActivity.this).setTitle("Erro!").setMessage(t.getMessage()).show();
-            }
-        });
+        Intent intent;
+        intent = new Intent(DetailActivity.this, DashboardActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("usuario", user);
+        intent.putExtras(bundle);
+        startActivity(intent);
+        finish();
     }
 
     private void getNomeUsuario(Long id){

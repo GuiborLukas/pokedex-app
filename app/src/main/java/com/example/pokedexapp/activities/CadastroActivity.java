@@ -52,8 +52,6 @@ public class CadastroActivity extends AppCompatActivity {
     private Bitmap imagem;
 
     private static final int PICK_IMAGE_REQUEST = 1307;
-    private static final int TAKE_PHOTO_REQUEST = 0304;
-
     private static final int REQUEST_PERMISSIONS = 0402;
     private static final String[] PERMISSIONS_TO_REQUEST = {
             Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -97,23 +95,6 @@ public class CadastroActivity extends AppCompatActivity {
         });
         builder.show();
 
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
-        if (resultCode == RESULT_OK) {
-            if (requestCode == PICK_IMAGE_REQUEST && data != null && data.getData() != null) {
-                try {
-                    selectedImage = data.getData();
-                    imagem = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
-                } catch (IOException e) {
-
-                }
-                imageViewCadastroFoto.setImageBitmap(imagem);
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     ActivityResultLauncher<Intent> activityResultLauncherTakePicture = registerForActivityResult(
@@ -184,13 +165,12 @@ public class CadastroActivity extends AppCompatActivity {
         }
         novoPokemon.setUsuario(user.getId());
 
-
         Call<Pokemon> cadastrarPokemon = new RetrofitConfig().getPokemonsService().cadastrarPokemon(novoPokemon);
         cadastrarPokemon.enqueue(new Callback<Pokemon>() {
             @Override
             public void onResponse(Call<Pokemon> call, Response<Pokemon> response) {
                 if (response.isSuccessful()) {
-                    new AlertDialog.Builder(getApplicationContext())
+                    new AlertDialog.Builder(CadastroActivity.this)
                             .setTitle("Sucesso")
                             .setMessage("Novo pokemon salvo com sucesso")
                             .setOnDismissListener(dialog -> recarregaDashboard())
@@ -198,9 +178,9 @@ public class CadastroActivity extends AppCompatActivity {
                 } else {
                     try {
                         JSONObject jObjError = new JSONObject(response.errorBody().string());
-                        new AlertDialog.Builder(getApplicationContext()).setTitle("Erro").setMessage(jObjError.getString("error")).show();
+                        new AlertDialog.Builder(CadastroActivity.this).setTitle("Erro").setMessage(jObjError.getString("error")).show();
                     } catch (JSONException | IOException e) {
-                        new AlertDialog.Builder(getApplicationContext()).setTitle("Erro").setMessage("Erro interno.").show();
+                        new AlertDialog.Builder(CadastroActivity.this).setTitle("Erro").setMessage("Erro interno.").show();
                     }
                 }
             }
