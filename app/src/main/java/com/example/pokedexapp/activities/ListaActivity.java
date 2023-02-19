@@ -33,7 +33,7 @@ import retrofit2.Response;
 
 
 public class ListaActivity extends AppCompatActivity {
-    private List<Pokemon> pokemonList;
+
     private Usuario user;
     private RecyclerView recyclerViewPokemons;
     private AdapterPokemon adapterPokemon;
@@ -44,6 +44,12 @@ public class ListaActivity extends AppCompatActivity {
         setContentView(R.layout.activity_lista);
         Bundle bundle = getIntent().getExtras();
         this.user = (Usuario) bundle.getSerializable("usuario");
+        getListaPokemon();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
         getListaPokemon();
     }
 

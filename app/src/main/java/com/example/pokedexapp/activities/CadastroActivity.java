@@ -194,11 +194,7 @@ public class CadastroActivity extends AppCompatActivity {
     }
 
     private void recarregaDashboard() {
-        Intent intent = new Intent(getApplicationContext(), DashboardActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("usuario", user);
-        intent.putExtras(bundle);
-        startActivity(intent);
+        finish();
         finish();
     }
 

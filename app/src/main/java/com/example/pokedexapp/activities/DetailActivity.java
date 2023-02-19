@@ -278,12 +278,7 @@ public class DetailActivity extends AppCompatActivity {
     }
 
     private void recarregaLista() {
-        Intent intent;
-        intent = new Intent(DetailActivity.this, DashboardActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("usuario", user);
-        intent.putExtras(bundle);
-        startActivity(intent);
+        finish();
         finish();
     }
 
