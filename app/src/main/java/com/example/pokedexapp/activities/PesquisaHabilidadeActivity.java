@@ -75,7 +75,7 @@ public class PesquisaHabilidadeActivity extends AppCompatActivity {
                 } else {
                     try {
                         JSONObject jObjError = new JSONObject(response.errorBody().string());
-                        Log.e("ERRO", "getTopTipos " + jObjError.getString("error").toString());
+                        Log.e("ERRO", "pesquisaPorhabilidade " + jObjError.getString("error").toString());
                     } catch (JSONException | IOException e) {
                         e.printStackTrace();
                     }

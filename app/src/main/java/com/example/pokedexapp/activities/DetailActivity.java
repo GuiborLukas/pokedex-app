@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -18,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -38,6 +41,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 import okhttp3.MediaType;
@@ -55,8 +59,9 @@ public class DetailActivity extends AppCompatActivity {
             editTextDetalheHabilidade1, editTextDetalheHabilidade2, editTextDetalheHabilidade3;
     TextView textViewCadastradoPor;
 
+    private Gson gson = new Gson();
     private Uri selectedImage;
-    String imagem;
+    private Bitmap imagem;
 
     private static final int PICK_IMAGE_REQUEST = 1307;
     private static final int REQUEST_EXTERNAL_STORAGE = 0402;
@@ -97,18 +102,18 @@ public class DetailActivity extends AppCompatActivity {
             }
         }
 
-
-        Bitmap image = byteToBitmap(pokemon.getFoto());
+        byte[] bytes = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            bytes = Base64.getDecoder().decode(pokemon.getFoto());
+        }
+        Bitmap image = byteToBitmap(bytes);
         imageViewDetalheFoto.setImageBitmap(image);
 
-        imageViewDetalheFoto.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                verifyStoragePermissions(DetailActivity.this);
-                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-                intent.setType("image/*");
-                startActivityForResult(Intent.createChooser(intent, "Abrir galeria"), PICK_IMAGE_REQUEST);
-            }
+        imageViewDetalheFoto.setOnClickListener(v -> {
+            verifyStoragePermissions(DetailActivity.this);
+            Intent intent1 = new Intent(Intent.ACTION_GET_CONTENT);
+            intent1.setType("image/*");
+            startActivityForResult(Intent.createChooser(intent1, "Abrir galeria"), PICK_IMAGE_REQUEST);
         });
     }
 
@@ -119,29 +124,30 @@ public class DetailActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            Bitmap bitmap = null;
-            try {
-                selectedImage = data.getData();
-                Cursor cursor = getContentResolver().query(selectedImage, null, null, null, null);
-                cursor.moveToFirst();
-                String documentId = cursor.getString(0);
-                documentId = documentId.substring(documentId.lastIndexOf(":") + 1);
-                cursor.close();
 
-                cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, null, MediaStore.Images.Media._ID + " = ?", new String[]{documentId}, null);
-                cursor.moveToFirst();
-                imagem = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA));
-                cursor.close();
-                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
-            } catch (IOException e) {
+        if (resultCode == RESULT_OK) {
+            if (requestCode == PICK_IMAGE_REQUEST && data != null && data.getData() != null) {
+                try {
+                    selectedImage = data.getData();
+                    imagem = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImage);
+                } catch (IOException e) {
 
+                }
+                imageViewDetalheFoto.setImageBitmap(imagem);
             }
-            imageViewDetalheFoto.setImageBitmap(bitmap);
         }
-
+        super.onActivityResult(requestCode, resultCode, data);
     }
+
+    ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null){
+                    Bundle bundle = result.getData().getExtras();
+                    imagem = (Bitmap) bundle.get("data");
+                    imageViewDetalheFoto.setImageBitmap(imagem);
+                }
+            }
+    );
 
     public static void verifyStoragePermissions(Activity activity) {
         int permission = ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE);
@@ -176,17 +182,16 @@ public class DetailActivity extends AppCompatActivity {
         habilidades.add(editTextDetalheHabilidade2.getText().toString());
         habilidades.add(editTextDetalheHabilidade3.getText().toString());
         pokemon.setHabilidade(habilidades);
-        File file = new File(imagem);
-        Bitmap bitmap = BitmapFactory.decodeFile(file.getAbsolutePath());
         ByteArrayOutputStream blob = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 0, blob);
+        imagem.compress(Bitmap.CompressFormat.PNG, 0, blob);
         byte[] bitmapdata = blob.toByteArray();
-        pokemon.setFoto(bitmapdata);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            pokemon.setFoto(Base64.getEncoder().encodeToString(bitmapdata));
+        }
         pokemon.setUsuario(user.getId());
 
-        Gson gson = new Gson();
         String jsonPokemon = gson.toJson(pokemon);
-        RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"), jsonPokemon);
+        RequestBody requestBody =  RequestBody.create(jsonPokemon, MediaType.parse("application/json"));
 
         Call<Pokemon> cadastrarPokemon = new RetrofitConfig().getPokemonsService().atualizarPokemon(pokemon.getId(), requestBody);
         cadastrarPokemon.enqueue(new Callback<Pokemon>() {

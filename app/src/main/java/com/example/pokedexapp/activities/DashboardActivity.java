@@ -176,44 +176,17 @@ public class DashboardActivity extends AppCompatActivity {
     public void cadastrarPokemon() {
         Intent intent = new Intent(DashboardActivity.this, CadastroActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putSerializable("user", user);
+        bundle.putSerializable("usuario", user);
         intent.putExtras(bundle);
         startActivity(intent);
     }
 
     public void listaPokemon() {
-        Call<List<Pokemon>> callPokemons = new RetrofitConfig().getPokemonsService().getPokemons();
-        callPokemons.enqueue(new Callback<List<Pokemon>>() {
-            @Override
-            public void onResponse(Call<List<Pokemon>> call, Response<List<Pokemon>> response) {
-                if (response.isSuccessful()) {
-                    List<Pokemon> pokemonList = new ArrayList<>(response.body());
-                    if (pokemonList.size() == 0) {
-                        new AlertDialog.Builder(DashboardActivity.this).setTitle("Atenção").setMessage("Nenhum pokemon encontrado para exibição").show();
-                        return;
-                    }
-                    Log.i("PokemonList", "onResponse: " + pokemonList.toString());
-                    Intent intent = new Intent(DashboardActivity.this, ListaActivity.class);
-                    Bundle bundle = new Bundle();
-                    bundle.putSerializable("pokemons", (Serializable) pokemonList);
-                    bundle.putSerializable("usuario", user);
-                    intent.putExtras(bundle);
-                    startActivity(intent);
-                } else {
-                    try {
-                        JSONObject jObjError = new JSONObject(response.errorBody().string());
-                        new AlertDialog.Builder(DashboardActivity.this).setTitle(String.format("Erro %d", response.code())).setMessage(jObjError.getString("error")).show();
-                    } catch (JSONException | IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Pokemon>> call, Throwable t) {
-                Log.e("ERRO", "listaPokemons: " + t.getMessage());
-            }
-        });
+        Intent intent = new Intent(DashboardActivity.this, ListaActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("usuario", user);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 
     public void pesquisaPokemonsPorHabilidade() {

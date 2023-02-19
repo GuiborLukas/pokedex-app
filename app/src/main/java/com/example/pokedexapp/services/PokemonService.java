@@ -27,18 +27,18 @@ public interface PokemonService {
     Call<List<Pokemon>> getPokemons();
 
     @GET("/pokemons/habilidades/{habilidade}")
-    Call<List<Pokemon>> getPokemonsPorHabilidade(@Query("habilidade") String habilidade);
+    Call<List<Pokemon>> getPokemonsPorHabilidade(@Path("habilidade") String habilidade);
 
     @GET("/pokemons/tipos/{tipo}")
-    Call<List<Pokemon>> getPokemonsPorTipo(@Query("tipo") String tipo);
+    Call<List<Pokemon>> getPokemonsPorTipo(@Path("tipo") String tipo);
 
     @GET("/pokemons/{id}")
-    Call<Pokemon> getPokemonPorId(@Query("id") Long id);
+    Call<Pokemon> getPokemonPorId(@Path("id") Long id);
 
-    @POST("/pokemons/")
+    @POST("/pokemons")
     Call<Pokemon> cadastrarPokemon(@Body RequestBody requestBody);
 
-    @PUT("/pokemons/{id}/")
+    @PUT("/pokemons/{id}")
     Call<Pokemon> atualizarPokemon(@Path("id") Long id, @Body RequestBody requestBody);
 
     @DELETE("/pokemons/{id}")

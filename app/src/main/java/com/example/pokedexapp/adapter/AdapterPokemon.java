@@ -2,6 +2,7 @@ package com.example.pokedexapp.adapter;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.pokedexapp.R;
 import com.example.pokedexapp.models.Pokemon;
 
+import java.util.Base64;
 import java.util.List;
 
 public class AdapterPokemon extends RecyclerView.Adapter<AdapterPokemon.MyViewHolder> {
@@ -34,7 +36,11 @@ public class AdapterPokemon extends RecyclerView.Adapter<AdapterPokemon.MyViewHo
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Pokemon pokemon = pokemonList.get(position);
         holder.nome.setText(pokemon.getNome());
-        Bitmap image = byteToBitmap(pokemon.getFoto());
+        byte[] bytes = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            bytes = Base64.getDecoder().decode(pokemon.getFoto());
+        }
+        Bitmap image = byteToBitmap(bytes);
         holder.foto.setImageBitmap(image);
     }
 
