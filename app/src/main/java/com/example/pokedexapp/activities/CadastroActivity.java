@@ -140,6 +140,10 @@ public class CadastroActivity extends AppCompatActivity {
             Toast.makeText(this, "Nome não pode ser vazio!", Toast.LENGTH_SHORT).show();
             return;
         }
+        if (imagem == null) {
+            Toast.makeText(this, "Insira ou tire uma foto!", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (editTextCadastroTipo.length() == 0) {
             Toast.makeText(this, "Tipo não pode ser vazio!", Toast.LENGTH_SHORT).show();
             return;
