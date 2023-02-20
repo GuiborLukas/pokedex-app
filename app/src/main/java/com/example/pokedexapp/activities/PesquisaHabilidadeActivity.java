@@ -57,6 +57,7 @@ public class PesquisaHabilidadeActivity extends AppCompatActivity {
 
     public void pesquisaPorhabilidade(String habilidade) {
         if (editTextPesquisaHabilidade.length() == 0) {
+            listViewPesquisaHabilidadeResultado.setAdapter(null);
             Toast.makeText(this, "Insira uma habilidade para pesquisar!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -84,6 +85,7 @@ public class PesquisaHabilidadeActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Pokemon>> call, Throwable t) {
+                listViewPesquisaHabilidadeResultado.setAdapter(null);
                 Log.e("ERRO", "pesquisaPorhabilidade " + t.getMessage());
             }
         });

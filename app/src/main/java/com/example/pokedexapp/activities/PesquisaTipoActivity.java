@@ -53,10 +53,15 @@ public class PesquisaTipoActivity extends AppCompatActivity {
 
     }
 
+    public void updateListView(List<String> pokemonNames){
+        ArrayAdapter<String> array = new ArrayAdapter<>(PesquisaTipoActivity.this, android.R.layout.simple_list_item_1, pokemonNames);
+        listViewPesquisaTipoResultado.setAdapter(array);
+    }
 
 
     public void pesquisaPorTipo(String tipo) {
         if (editTextPesquisaTipo.length() == 0) {
+            listViewPesquisaTipoResultado.setAdapter(null);
             Toast.makeText(this, "Insira um tipo para pesquisar!", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -70,8 +75,7 @@ public class PesquisaTipoActivity extends AppCompatActivity {
                     for (Pokemon pokemon : pokemons) {
                         pokemonNames.add(pokemon.getNome());
                     }
-                    ArrayAdapter<String> array = new ArrayAdapter<>(PesquisaTipoActivity.this, android.R.layout.simple_list_item_1, pokemonNames);
-                    listViewPesquisaTipoResultado.setAdapter(array);
+                    updateListView(pokemonNames);
                 } else {
                     try {
                         JSONObject jObjError = new JSONObject(response.errorBody().string());
@@ -84,6 +88,7 @@ public class PesquisaTipoActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<Pokemon>> call, Throwable t) {
+                listViewPesquisaTipoResultado.setAdapter(null);
                 Log.e("ERRO", "pesquisaPorhabilidade " + t.getMessage());
             }
         });
